@@ -13,8 +13,37 @@ const getAll = async (req, res) => {
 
 const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
+
+  //checks if any feild is empty
+  if (!name || !email || !password) {
+    res.status(400).send({ message: "Please enter all feilds" });
+  }
+
+  try {
+    //checks if any user exists
+    const userPointer = await User.findOne({ email });
+    if (userPointer) {
+      res.status(400).send({ message: "user exists" });
+    }
+
+    //generates hashed password for auth
+    const salt = await bcrypt.genSalt(12);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      name: name,
+      email: email,
+      password: hashPassword,
+    });
+
+    await user.save();
+    res.status(200).send({ message: "Account has been created" });
+  } catch (err) {
+    res.status(404).send({ message: err.message });
+  }
 };
 
 module.exports = {
   getAll,
+  registerUser,
 };
