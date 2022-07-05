@@ -2,6 +2,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const bodyParser = require("body-parser");
+const userRoutes = require("./routes/userRoutes");
 const app = express();
 const port = 3000;
 
@@ -11,6 +12,7 @@ const db = mongoose.connection;
 db.on("error", (err) => console.log(err));
 db.once("open", () => console.log(`Connected to ${process.env.DATABASE_URL}`));
 
+app.use("/userGoals/users", userRoutes);
 app.use(bodyParser.json());
 app.listen(port, () => {
   console.log(`Server live on : ${port}`);
