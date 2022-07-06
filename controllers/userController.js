@@ -59,14 +59,22 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   //checks if user exists
-  const user = await User.findOne({ email });
-  if (!user) res.status(404).send({ message: "user does not exist" });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404);
+      throw new Error("User does not exist");
+    }
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (passwordMatch) {
-    res.send({ message: `Welcome back ${user.name}` });
-  } else {
-    res.status(404).send({ message: "invalid password" });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (passwordMatch) {
+      res.send({ message: `Welcome back ${user.name}` });
+    } else {
+      res.status(404);
+      throw new Error("Invalid password entered");
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
   }
 };
 
