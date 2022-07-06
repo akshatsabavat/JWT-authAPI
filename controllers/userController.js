@@ -68,7 +68,12 @@ const loginUser = async (req, res) => {
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (passwordMatch) {
-      res.send({ message: `Welcome back ${user.name}` });
+      res.json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        token: generateJWT(user._id),
+      });
     } else {
       res.status(404);
       throw new Error("Invalid password entered");
@@ -90,6 +95,20 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const { _id, name, email } = await User.findById(req.user.id); // req.user passed from the protect MW function
+
+    res.status(200).json({
+      _id,
+      name,
+      email,
+    });
+  } catch (err) {
+    res.status(401).send({ message: err.message });
+  }
+};
+
 //Generate JWT
 const generateJWT = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -102,4 +121,5 @@ module.exports = {
   registerUser,
   loginUser,
   deleteUser,
+  getUser,
 };
