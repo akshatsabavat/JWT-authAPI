@@ -36,4 +36,73 @@ const setGoal = async (req, res) => {
   }
 };
 
-module.exports = { setGoal, getAllGoals };
+const updateGoal = async (req, res) => {
+  const userByToken = req.user;
+  const { newGoal } = req.body;
+  const goalID = req.params.id;
+
+  try {
+    const goal = await Goal.findById(goalID);
+
+    //check if goal exists
+    if (!goal) {
+      res.status(400);
+      throw new Error("Goal not found");
+    }
+
+    const user = await User.findById(userByToken.id);
+
+    //Check if authenticated user exists
+    if (!user) {
+      res.status(400);
+      throw new Error("User does not exist");
+    }
+
+    //Check is logged user matches goal TBU user
+    if (goal.user.toString() !== user.id) {
+      throw new Error("User does not contain the entered goal");
+    }
+
+    const updateGoal = await Goal.updateOne(
+      { _id: goalID },
+      { $set: { text: newGoal } }
+    );
+
+    res.status(201).send({ message: "goal Updated", new: updateGoal });
+  } catch (err) {
+    res.status(400).send({ message: err.message });
+  }
+};
+
+const deleteGoal = async (req, res) => {
+  const userByToken = req.user;
+  const goalID = req.params.id;
+  try {
+    const goal = await Goal.findById(goalID);
+
+    if (!goal) {
+      res.status(400);
+      throw new Error("Goal does not exist");
+    }
+
+    const user = await User.findById(userByToken.id);
+
+    if (!user) {
+      res.status(400);
+      throw new Error("User does not exist");
+    }
+
+    if (goal.user.toString() !== user.id) {
+      res.status(400);
+      throw new Error("User does not contain the entered goal");
+    }
+
+    await goal.remove();
+
+    res.status(200).send({ message: "Goal deleted" });
+  } catch {
+    res.status(400).send({ message: err.message });
+  }
+};
+
+module.exports = { setGoal, getAllGoals, updateGoal, deleteGoal };
