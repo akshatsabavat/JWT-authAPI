@@ -1,6 +1,17 @@
 const Goal = require("../models/goalModel");
 const User = require("../models/userModel");
 
+const getAllGoals = async (req, res) => {
+  try {
+    const userByToken = req.user;
+    const userGoals = await Goal.find({ user: userByToken.id });
+
+    res.status(200).send(userGoals);
+  } catch (err) {
+    res.status(400).send({ message: err.message });
+  }
+};
+
 const setGoal = async (req, res) => {
   try {
     //gets the user by jwt through the auth middle ware
@@ -25,4 +36,4 @@ const setGoal = async (req, res) => {
   }
 };
 
-module.exports = { setGoal };
+module.exports = { setGoal, getAllGoals };
