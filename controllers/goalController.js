@@ -12,12 +12,14 @@ const setGoal = async (req, res) => {
       throw new Error("Please Enter a goal");
     }
 
-    const goal = Goal.create({
+    const goal = await Goal.create({
       text: goalText,
       user: userByToken.id,
     });
 
-    res.status(200).send(goal);
+    await goal.save();
+
+    res.status(200).json(goal);
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
